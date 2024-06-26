@@ -33,10 +33,10 @@
     <None Update="mod_meta.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Text\de.json">
+    <None Update="Assets\**\*.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="Text\en.json">
+    <None Update="Config\**\*.*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
