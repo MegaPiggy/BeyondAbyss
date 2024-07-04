@@ -69,7 +69,12 @@ namespace BeyondAbyss.Patches.Dynamic
                 });
 
                 newIris = GameObject.Instantiate(iris);
+                newIris.name = "NewIris";
                 newIris.transform.parent = newButton.transform.GetChild(1);
+                foreach (var image in newIris.GetComponentsInChildren<UnityEngine.UI.Image>(true))
+                {
+                    image.raycastTarget = false;
+                }
 
                 newButton.GetComponentsInChildren<UnityEngine.UI.Image>()[1].sprite = eyeOpenRed.GetComponent<UnityEngine.UI.Image>().sprite;
             }
