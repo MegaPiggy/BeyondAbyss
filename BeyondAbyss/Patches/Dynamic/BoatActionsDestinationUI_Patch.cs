@@ -13,6 +13,7 @@ namespace BeyondAbyss.Patches.Dynamic
     {
         private static GameObject newButton = null;
         private static GameObject newIris = null;
+        private static decimal loss;
 
         [HarmonyPostfix]
         [HarmonyPatch(nameof(BoatActionsDestinationUI.Init))]
@@ -44,27 +45,11 @@ namespace BeyondAbyss.Patches.Dynamic
                 });
                 destButton.BasicButtonWrapper.OnClick = new System.Action(() =>
                 {
-                    decimal loss = (decimal)(-1.0f * UnityEngine.Random.Range(30.0f, (float)GameManager.Instance.SaveData.Funds / 100.0f * 10.0f));
+                    loss = (decimal)(-1.0f * UnityEngine.Random.Range(30.0f, (float)GameManager.Instance.SaveData.Funds / 100.0f * 10.0f));
                     GameManager.Instance.AddFunds(loss);
+                    WinchCore.Log.Debug("Lost funds: " + loss);
                     ConfigManager.INSTANCE.SleepingOnLand = true;
-                    GameEvents.Instance.OnTimeForcefullyPassingChanged += new System.Action<bool, string, TimePassageMode>((isForcefullyPassing, reason, mode) =>
-                    {
-                        if (!isForcefullyPassing)
-                        {
-                            ConfigManager.INSTANCE.SleepingOnLand = false;
-                            GameManager.Instance.UI.ShowNotification(NotificationType.MONEY_LOST, "notification.funds-removed", new object[]
-                            {
-                                string.Concat(new string[]
-                                {
-                                    "<color=#",
-                                    GameManager.Instance.LanguageManager.GetColorCode(DredgeColorTypeEnum.NEGATIVE),
-                                    ">$",
-                                    loss.ToString("n2", LocalizationSettings.SelectedLocale.Formatter),
-                                    "</color>"
-                                })
-                            });
-                        }
-                    });
+                    GameEvents.Instance.OnTimeForcefullyPassingChanged += OnTimeForcefullyPassingChanged;
                     restButton.GetComponent<SubDestinationButton>().BasicButtonWrapper.OnClick();
                 });
 
@@ -77,6 +62,32 @@ namespace BeyondAbyss.Patches.Dynamic
                 }
 
                 newButton.GetComponentsInChildren<UnityEngine.UI.Image>()[1].sprite = eyeOpenRed.GetComponent<UnityEngine.UI.Image>().sprite;
+            }
+        }
+
+        public static void OnTimeForcefullyPassingChanged(bool isForcefullyPassing, string reason, TimePassageMode mode)
+        {
+            if (!isForcefullyPassing)
+            {
+                if (loss != 0)
+                {
+                    ConfigManager.INSTANCE.SleepingOnLand = false;
+                    var lossString = loss.ToString("n2", LocalizationSettings.SelectedLocale.Formatter);
+                    WinchCore.Log.Debug("Send loss notification: " + lossString);
+                    GameManager.Instance.UI.ShowNotification(NotificationType.MONEY_LOST, "notification.funds-removed", new object[]
+                    {
+                                string.Concat(new string[]
+                                {
+                                    "<color=#",
+                                    GameManager.Instance.LanguageManager.GetColorCode(DredgeColorTypeEnum.NEGATIVE),
+                                    ">$",
+                                    lossString,
+                                    "</color>"
+                                })
+                    });
+                    loss = 0;
+                }
+                GameEvents.Instance.OnTimeForcefullyPassingChanged -= OnTimeForcefullyPassingChanged;
             }
         }
 
