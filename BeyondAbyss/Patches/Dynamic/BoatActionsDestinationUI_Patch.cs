@@ -72,19 +72,7 @@ namespace BeyondAbyss.Patches.Dynamic
                 if (loss != 0)
                 {
                     ConfigManager.INSTANCE.SleepingOnLand = false;
-                    var lossString = loss.ToString("n2", LocalizationSettings.SelectedLocale.Formatter);
-                    WinchCore.Log.Debug("Send loss notification: " + lossString);
-                    GameManager.Instance.UI.ShowNotification(NotificationType.MONEY_LOST, "notification.funds-removed", new object[]
-                    {
-                                string.Concat(new string[]
-                                {
-                                    "<color=#",
-                                    GameManager.Instance.LanguageManager.GetColorCode(DredgeColorTypeEnum.NEGATIVE),
-                                    ">$",
-                                    lossString,
-                                    "</color>"
-                                })
-                    });
+                    GameManager.Instance.UI.ShowMoneyNotification("notification.funds-removed", loss);
                     loss = 0;
                 }
                 GameEvents.Instance.OnTimeForcefullyPassingChanged -= OnTimeForcefullyPassingChanged;
